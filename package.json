@@ -15,6 +15,7 @@
     "expo-router": "~58.0.29",
     "expo-splash-screen": "~58.0.12",
     "expo-status-bar": "~58.0.4",
+    "expo-updates": "~58.0.20",
     "fflate": "^0.8.3",
     "react": "19.3.0",
     "react-dom": "^19.3.0",
@@ -38,7 +39,9 @@
     "start:go": "expo start --go",
     "sprites": "node scripts/generate-sprites.js",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "update": "eas update --channel preview --platform android",
+    "build:apk": "eas build -p android --profile preview"
   },
   "private": true
 }

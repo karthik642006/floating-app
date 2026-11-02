@@ -22,9 +22,18 @@
         "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
         "android.permission.POST_NOTIFICATIONS",
         "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_SPECIAL_USE",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE"
       ],
-      "versionCode": 1
+      "versionCode": 1,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -55,6 +64,9 @@
         "projectId": "3fdef62a-1cef-498c-a14e-53d2b9a21f85"
       }
     },
-    "owner": "karthik642006"
+    "owner": "karthik642006",
+    "updates": {
+      "url": "https://u.expo.dev/3fdef62a-1cef-498c-a14e-53d2b9a21f85"
+    }
   }
 }
