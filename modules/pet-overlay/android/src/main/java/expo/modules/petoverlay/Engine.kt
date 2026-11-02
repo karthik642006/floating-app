@@ -172,7 +172,7 @@ class Mascot(val width: Int, val height: Int, screenW: Int, screenH: Int, var sp
 
   init {
     resize(screenW, screenH)
-    setX(Random.nextInt(max(1, right - width)))
+    clampX(Random.nextInt(max(1, right - width)))
     y = top
   }
 
@@ -182,10 +182,10 @@ class Mascot(val width: Int, val height: Int, screenW: Int, screenH: Int, var sp
     anim = Anims.falling()
   }
 
-  fun setX(v: Int) { x = max(left, min(right - width, v)) }
-  fun setY(v: Int) { y = max(top, min(bottom - height, v)) }
+  fun clampX(v: Int) { x = max(left, min(right - width, v)) }
+  fun clampY(v: Int) { y = max(top, min(bottom - height, v)) }
 
-  fun dragTo(nx: Int, ny: Int) { setX(nx); setY(ny); dragging = true }
+  fun dragTo(nx: Int, ny: Int) { clampX(nx); clampY(ny); dragging = true }
 
   fun release(vx: Float, vy: Float) {
     dragging = false
@@ -197,7 +197,7 @@ class Mascot(val width: Int, val height: Int, screenW: Int, screenH: Int, var sp
   fun tick() {
     if (flinging) {
       val dt = TICK_MS / 1000f
-      setX((x + fvx * dt).toInt()); setY((y + fvy * dt).toInt())
+      clampX((x + fvx * dt).toInt()); clampY((y + fvy * dt).toInt())
       val decay = 0.08f.pow(dt)
       fvx *= decay; fvy *= decay
       if (hypot(fvx, fvy) < 60f) flinging = false
@@ -211,8 +211,8 @@ class Mascot(val width: Int, val height: Int, screenW: Int, screenH: Int, var sp
       a = Anims.flinging(fvx)
     }
     a.onEdges(y <= top, y + height >= bottom, x <= left, x + width >= right)
-    setX(x + (a.step.dx * mult).toInt())
-    setY(y + (a.step.dy * mult).toInt())
+    clampX(x + (a.step.dx * mult).toInt())
+    clampY(y + (a.step.dy * mult).toInt())
     facingLeft = a.dir == Dir.LEFT
 
     a.ticks++
