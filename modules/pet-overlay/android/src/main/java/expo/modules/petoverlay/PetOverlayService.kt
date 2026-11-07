@@ -139,6 +139,10 @@ class PetOverlayService : Service() {
           return START_STICKY
         }
       }
+      ACTION_ACTION -> {
+        performAction(intent?.getStringExtra(EXTRA_ACTION).orEmpty())
+        return START_STICKY
+      }
     }
     // Not running yet (fresh start, boot, or the system restarted us): full start below.
     if (!Settings.canDrawOverlays(this)) {
@@ -323,6 +327,18 @@ class PetOverlayService : Service() {
     startInForeground()
   }
 
+  private fun performAction(action: String) {
+    when (action) {
+      "hide" -> hideAll()
+      "show" -> {
+        setHidden(this, false)
+        if (running) showPets()
+      }
+      "walk", "jump", "sit" -> views.forEach { it.mascot.requestAction(action) }
+      "feed" -> markFed(this)
+    }
+  }
+
   private fun openApp(path: String) {
     val i = Intent(Intent.ACTION_VIEW, Uri.parse("petsonscreen:///$path")).apply {
       setPackage(packageName)
@@ -477,6 +493,8 @@ class PetOverlayService : Service() {
     const val ACTION_STOP = "expo.modules.petoverlay.STOP"
     const val ACTION_HIDE = "expo.modules.petoverlay.HIDE"
     const val ACTION_SHOW = "expo.modules.petoverlay.SHOW"
+    const val ACTION_ACTION = "expo.modules.petoverlay.ACTION"
+    const val EXTRA_ACTION = "action"
     private const val CHANNEL = "pets_on_screen"
     private const val NOTIFICATION_ID = 99
     private const val PREFS = "pet_overlay"
@@ -545,9 +563,10 @@ class PetOverlayService : Service() {
       }
     }
 
-    fun start(ctx: Context, action: String? = null) {
+    fun start(ctx: Context, action: String? = null, actionValue: String? = null) {
       val i = Intent(ctx, PetOverlayService::class.java)
       if (action != null) i.action = action
+      if (actionValue != null) i.putExtra(EXTRA_ACTION, actionValue)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) ctx.startForegroundService(i) else ctx.startService(i)
     }
   }

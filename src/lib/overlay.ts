@@ -12,6 +12,7 @@ import { Platform } from 'react-native';
 import { BUILTIN_PETS } from '../data/builtinPets';
 import { petDir } from './pets';
 import { getState, setState } from './store';
+import type { PetAction } from './conversation';
 
 interface PetOverlayNative {
   canDrawOverlays(): boolean;
@@ -24,6 +25,7 @@ interface PetOverlayNative {
   consumeStoppedByUser(): boolean;
   isHidden(): boolean;
   markFed(): void;
+  performAction(actionJson: string): void;
 }
 
 const native = Platform.OS === 'android' ? requireOptionalNativeModule<PetOverlayNative>('PetOverlay') : null;
@@ -84,6 +86,22 @@ export function showOverlay() {
 /** Tell the floating service the pets were fed, so its hunger timer resets. */
 export function markFed() {
   native?.markFed();
+}
+
+export function performPetAction(action: PetAction) {
+  if (action.type === 'feed') {
+    markFed();
+    return;
+  }
+  if (action.type === 'hide') {
+    hideOverlay();
+    return;
+  }
+  if (action.type === 'show') {
+    showOverlay();
+    return;
+  }
+  native?.performAction(JSON.stringify(action));
 }
 
 /**
