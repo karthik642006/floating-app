@@ -2,7 +2,7 @@
  * Port of `shimeji.lib.Mascot` + `Playground` + the fling Scroller from MascotView.
  * Coordinates are in device pixels, exactly like the original; the renderer converts to dp.
  */
-import { Animation, DEFAULT_CONFIG, Dragging, Falling, Flinging, MascotConfig } from './animations';
+import { Animation, DEFAULT_CONFIG, Dragging, Falling, Flinging, Jump, MascotConfig, Sit, Walk } from './animations';
 
 export interface Playground {
   top: number;
@@ -58,6 +58,13 @@ export class Mascot {
 
   setSpeed(v: number) {
     this.speed = v;
+  }
+
+  requestAction(action: 'walk' | 'jump' | 'sit') {
+    const direction = this.facingLeft ? 'LEFT' : 'RIGHT';
+    if (action === 'walk') this.anim = Walk(direction, this.cfg);
+    if (action === 'jump') this.anim = Jump(direction, this.cfg);
+    if (action === 'sit') this.anim = Sit(direction, this.cfg);
   }
 
   /** Finger lifted without dragging (tap). */

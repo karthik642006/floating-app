@@ -5,6 +5,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSyncExternalStore } from 'react';
+import type { ConversationTurn } from './conversation';
 
 export interface ImportedPet {
   id: number;
@@ -29,6 +30,8 @@ export interface AppState {
   lastFed: number;
   slots: (number | null)[];
   imported: ImportedPet[];
+  conversation: ConversationTurn[];
+  petExpression: 'neutral' | 'happy' | 'surprised' | 'thinking' | 'speaking';
 }
 
 const KEY = 'pets_on_screen_state_v1';
@@ -49,6 +52,8 @@ const defaults: AppState = {
   lastFed: 0,
   slots: [1, 3, 5, null, null, null, null, null, null],
   imported: [],
+  conversation: [],
+  petExpression: 'neutral',
 };
 
 let state: AppState = defaults;
@@ -79,7 +84,7 @@ export async function hydrate() {
   try {
     const raw = await AsyncStorage.getItem(KEY);
     const saved = raw ? (JSON.parse(raw) as Partial<AppState>) : {};
-    state = { ...defaults, ...saved, hydrated: true, overlayActive: false, overlayHidden: false };
+    state = { ...defaults, ...saved, conversation: saved.conversation ?? [], hydrated: true, overlayActive: false, overlayHidden: false };
     if (state.lastFed === 0) state.lastFed = Date.now();
   } catch {
     state = { ...defaults, hydrated: true, lastFed: Date.now() };

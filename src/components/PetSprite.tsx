@@ -4,6 +4,7 @@ import { Image, PanResponder, PixelRatio, StyleSheet, View } from 'react-native'
 import { USED_FRAMES } from '../engine/animations';
 import { Mascot, TICK_MS } from '../engine/mascot';
 import { frameSources, SPRITE_PX } from '../lib/pets';
+import { useAppState } from '../lib/store';
 
 interface Props {
   petId: number;
@@ -26,6 +27,7 @@ export const PetSprite = memo(function PetSprite(props: Props) {
  * mounted once and toggled with opacity, which avoids image reload flicker.
  */
 function PetSpriteInner({ petId, area, size, speed, interactive = true, onTap }: Props) {
+  const expression = useAppState((s) => s.petExpression);
   const pr = PixelRatio.get();
   const spritePx = Math.round(SPRITE_PX * size);
   const spriteDp = spritePx / pr;
@@ -89,7 +91,16 @@ function PetSpriteInner({ petId, area, size, speed, interactive = true, onTap }:
             key={f}
             source={sources[f]}
             fadeDuration={0}
-            style={[StyleSheet.absoluteFill, { opacity: f === view.frame ? 1 : 0 }]}
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                opacity:
+                  f === view.frame ||
+                  (expression === 'speaking' && f === 1 && view.frame === 0)
+                    ? 1
+                    : 0,
+              },
+            ]}
             resizeMode="contain"
           />
         ))}

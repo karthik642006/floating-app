@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
-import { useRef } from 'react';
-import { Linking, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Alert, Linking, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SeekBar } from '../../components/SeekBar';
@@ -8,6 +8,9 @@ import { LANGUAGES, useT } from '../../lib/i18n';
 import { refreshOverlay } from '../../lib/overlay';
 import { setState, useAppState } from '../../lib/store';
 import { colors, radius } from '../../lib/theme';
+import { listenAndRespond, respondToText } from '../../lib/conversationRunner';
+import { clearConversationMemory } from '../../lib/conversation';
+import { voiceAvailable } from '../../lib/voice';
 
 const HUNGER_OPTIONS = [0, 15, 30, 60, 120];
 
@@ -19,6 +22,7 @@ export default function Settings() {
   const hungry = useAppState((s) => s.hungryMinutes);
   const lang = useAppState((s) => s.language);
   const restartTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [command, setCommand] = useState('');
 
   // Settings apply to the floating service after the user stops dragging.
   const restartOverlay = () => {
@@ -30,6 +34,58 @@ export default function Settings() {
     <SafeAreaView style={styles.wrap} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}>
         <Text style={styles.title}>{t.settings}</Text>
+
+        <View style={styles.voiceCard}>
+          <Text style={styles.voiceHint}>
+            {voiceAvailable
+              ? 'Tap Talk and speak a command, or type one below. The pet can also answer through TinyTalk.'
+              : 'Expo Go supports pet speech. Type a command below; voice input is available in an Android development build.'}
+          </Text>
+          <TextInput
+            value={command}
+            onChangeText={setCommand}
+            placeholder="Try: jump, sit, hide, show, or feed"
+            placeholderTextColor={colors.muted}
+            style={styles.commandInput}
+            returnKeyType="send"
+            onSubmitEditing={async () => {
+              if (!command.trim()) return;
+              try {
+                await respondToText(command.trim());
+                setCommand('');
+              } catch (error) {
+                Alert.alert('Pet conversation', error instanceof Error ? error.message : 'Unable to respond right now.');
+              }
+            }}
+          />
+          <Pressable
+            style={[styles.voiceButton, !voiceAvailable && styles.voiceButtonDisabled]}
+            disabled={!voiceAvailable}
+            onPress={async () => {
+              try {
+                await listenAndRespond();
+              } catch (error) {
+                Alert.alert('Voice input', error instanceof Error ? error.message : 'Unable to listen right now.');
+              }
+            }}
+          >
+            <Text style={styles.voiceButtonText}>🎙️ Talk to your pet</Text>
+          </Pressable>
+          <Pressable
+            style={styles.voiceButton}
+            onPress={async () => {
+              if (!command.trim()) return;
+              try {
+                await respondToText(command.trim());
+                setCommand('');
+              } catch (error) {
+                Alert.alert('Pet conversation', error instanceof Error ? error.message : 'Unable to respond right now.');
+              }
+            }}
+          >
+            <Text style={styles.voiceButtonText}>🔊 Send to pet</Text>
+          </Pressable>
+        </View>
 
         <View style={styles.card}>
           <Row label={`🏃 ${t.speed}`} value={speed.toFixed(1)} />
@@ -65,6 +121,15 @@ export default function Settings() {
           <Text style={styles.linkText}>🌐 {t.language}</Text>
           <Text style={styles.linkValue}>{LANGUAGES.find((l) => l.code === lang)?.label}</Text>
         </Pressable>
+        <Pressable
+          style={styles.link}
+          onPress={() => {
+            clearConversationMemory();
+            Alert.alert('Conversation memory', 'Recent conversation memory was cleared.');
+          }}
+        >
+          <Text style={styles.linkText}>🧠 Clear conversation memory</Text>
+        </Pressable>
         <Pressable style={styles.link} onPress={() => Share.share({ message: 'Pets On Screen — cute desktop pets for your phone!' })}>
           <Text style={styles.linkText}>📤 {t.shareApp}</Text>
         </Pressable>
@@ -99,4 +164,10 @@ const styles = StyleSheet.create({
   link: { flexDirection: 'row', backgroundColor: colors.card, borderRadius: radius.md, padding: 18 },
   linkText: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.text },
   linkValue: { fontSize: 15, color: colors.muted },
+  voiceButton: { backgroundColor: colors.primary, borderRadius: radius.md, padding: 16, alignItems: 'center' },
+  voiceButtonDisabled: { opacity: 0.55 },
+  voiceButtonText: { color: '#fff', fontSize: 16, fontWeight: '900' },
+  voiceCard: { backgroundColor: colors.card, borderRadius: radius.md, padding: 16, gap: 10 },
+  voiceHint: { color: colors.text, lineHeight: 20 },
+  commandInput: { borderWidth: 1, borderColor: colors.muted, borderRadius: radius.sm, padding: 12, color: colors.text },
 });

@@ -192,6 +192,16 @@ class Mascot(val width: Int, val height: Int, screenW: Int, screenH: Int, var sp
     if (hypot(vx, vy) > 600f) { flinging = true; fvx = vx; fvy = vy }
   }
 
+  fun requestAction(action: String) {
+    val d = if (facingLeft) Dir.LEFT else Dir.RIGHT
+    anim = when (action) {
+      "walk" -> Anims.walk(d)
+      "jump" -> Anims.jump(d)
+      "sit" -> Anims.stand(d)
+      else -> anim
+    }
+  }
+
   private val mult get() = if (speed <= 0.1) 1.0 else speed + 0.9
 
   fun tick() {
